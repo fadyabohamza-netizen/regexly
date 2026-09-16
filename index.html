@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="regexly — Describe a pattern in plain English, get a RegEx with explanations.">
+<meta property="og:title" content="Regexly">
+<meta property="og:description" content="Describe a pattern in plain English, get a RegEx with explanations.">
+<meta property="og:url" content="https://fadyabohamza-netizen.github.io/regexly/">
+<meta property="og:type" content="website">
+<title>Regexly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #2dd4bf;
+    --accent2: #3fb950;
+    --danger: #f85149;
+    --purple: #bc8cff;
+    --gold: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .logo .icon { font-size: 26px; }
+  header nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    margin-left: 16px;
+  }
+  header nav a:hover { text-decoration: underline; }
+  main {
+    flex: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    width: 100%;
+  }
+  .hero h1 { font-size: 28px; margin-bottom: 8px; color: var(--accent); }
+  .hero p { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .auth-bar {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .auth-bar .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .auth-bar .dot.connected { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+  .auth-bar .auth-text { font-size: 13px; color: var(--text); flex: 1; min-width: 200px; }
+  .auth-bar .auth-text small { color: var(--muted); display: block; margin-top: 4px; }
+  .auth-bar button.connect {
+    background: var(--accent2); color: #0d1117; border: none; border-radius: 8px;
+    padding: 9px 18px; font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .auth-bar button.connect:hover { opacity: 0.9; }
+  .auth-bar button.connect.gold { background: var(--gold); }
+  .tool { margin-bottom: 14px; }
+  .field-label {
+    font-size: 12px; color: var(--muted); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  textarea {
+    width: 100%; min-height: 180px; background: var(--bg2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 14px;
+    font-family: inherit; font-size: 13px; line-height: 1.5;
+    resize: vertical; outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: #484f58; }
+  .extra-field {
+    margin-bottom: 14px;
+  }
+  .extra-field label {
+    font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .extra-field input, .extra-field select {
+    width: 100%; background: var(--bg2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+    font-family: inherit; font-size: 13px; outline: none;
+  }
+  .extra-field input:focus, .extra-field select:focus { border-color: var(--accent); }
+  .controls { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .premium-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; }
+  .premium-toggle input { accent-color: var(--purple); width: 16px; height: 16px; cursor: pointer; }
+  button.generate {
+    background: var(--accent); color: #0d1117; border: none; border-radius: 8px;
+    padding: 10px 24px; font-family: inherit; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  button.generate:hover { opacity: 0.9; }
+  button.generate:disabled { opacity: 0.5; cursor: not-allowed; }
+  .premium-badge {
+    background: linear-gradient(135deg, #6e40c9, #bc8cff); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+    letter-spacing: 0.5px;
+  }
+  .output {
+    margin-top: 20px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; min-height: 60px; font-size: 13px;
+    line-height: 1.6; white-space: pre-wrap; word-break: break-word; display: none;
+  }
+  .output.show { display: block; }
+  .output-label {
+    font-size: 12px; color: var(--muted); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .copy-btn {
+    margin-top: 12px; background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 6px; padding: 6px 14px;
+    font-family: inherit; font-size: 12px; cursor: pointer; display: none;
+  }
+  .copy-btn.show { display: inline-block; }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .err {
+    color: var(--danger); font-size: 13px; margin-top: 10px; display: none;
+    background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.3);
+    padding: 10px 12px; border-radius: 8px;
+  }
+  .err.show { display: block; }
+  .status-line { font-size: 12px; color: var(--muted); margin-top: 8px; display: none; }
+  .status-line.show { display: block; }
+  footer {
+    text-align: center; padding: 24px; color: var(--muted); font-size: 12px;
+    border-top: 1px solid var(--border); background: var(--bg2);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  .api-endpoint { margin-top: 36px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .api-endpoint h3 { font-size: 13px; color: var(--accent); margin-bottom: 6px; }
+  .api-endpoint p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .api-endpoint a { color: var(--accent); }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(13,17,23,0.3); border-top-color: #0d1117;
+    border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 22px; }
+    header { padding: 14px 16px; }
+    main { padding: 24px 14px; }
+    .logo { font-size: 16px; }
+    header nav a { font-size: 12px; margin-left: 10px; display: inline-block; margin-top: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <span class="icon">🔤</span>
+    Regexly
+    <span>· English → RegEx</span>
+  </a>
+  <nav>
+    <a href="https://github.com/fadyabohamza-netizen/regexly" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://gen.pollinations.ai" target="_blank" rel="noopener">Powered by Pollinations</a>
+  </nav>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Describe it. Get the RegEx.</h1>
+    <p>Type a pattern in plain English and Regexly writes the regular expression with a clear explanation. Powered by Pollinations.</p>
+  </div>
+
+  <div class="auth-bar">
+    <span class="dot" id="authDot"></span>
+    <div class="auth-text" id="authText">Not connected.</div>
+    <button class="connect" id="connectBtn">Connect Pollen</button>
+  </div>
+
+  <div class="tool">
+    <div class="field-label">Describe your pattern in plain English</div>
+    <textarea id="primaryInput" placeholder="a US phone number with optional country code
+
+e.g.: match a 10-digit phone number like 555-123-4567 with optional +1 prefix"></textarea>
+  </div>
+
+  <div id="extraFields"></div>
+
+  <div class="controls">
+    <button class="generate" id="generateBtn">Generate</button>
+    <label class="premium-toggle">
+      <input type="checkbox" id="premiumCheck">
+      Premium model
+      <span class="premium-badge">PRO</span>
+    </label>
+    <span class="status-line" id="status"></span>
+  </div>
+
+  <div class="err" id="err"></div>
+
+  <div class="output" id="output">
+    <div class="output-label">Result</div>
+    <div id="outputText"></div>
+  </div>
+  <button class="copy-btn" id="copyBtn">Copy to clipboard</button>
+
+  <div class="api-endpoint">
+    <h3>How it works — Bring Your Own Pollen</h3>
+    <p>Click <b>Connect Pollen</b>, approve the consent screen (default budget 5 Pollen, valid 7 days, revocable anytime from <a href="https://enter.pollinations.ai/keys" target="_blank" rel="noopener">your dashboard</a>), and every request is paid from your own balance through a scoped key. You stay in control — Regexly never touches your secret key.</p>
+  </div>
+</main>
+
+<footer>
+  Made with 🪶 by <a href="https://github.com/fadyabohamza-netizen" target="_blank" rel="noopener">fadyabohamza-netizen</a> · Powered by <a href="https://gen.pollinations.ai" target="_blank" rel="noopener">Pollinations</a> · free & open
+</footer>
+
+<script>
+const CLIENT_ID      = "pk_dB25Dh5nCjRw12HF";
+const REDIRECT_URI   = "https://fadyabohamza-netizen.github.io/regexly/";
+const AUTH_URL       = "https://enter.pollinations.ai/authorize";
+const TOKEN_URL      = "https://enter.pollinations.ai/api/oauth/token";
+const API_BASE       = "https://gen.pollinations.ai/v1/chat/completions";
+const FREE_MODEL     = "openai/gpt-5.4-nano";
+const PREMIUM_MODEL  = "openai/gpt-5.5";
+const STORAGE_KEY    = "gm_session_key";
+const VERIFIER_KEY   = "gm_pkce_verifier";
+const STATE_KEY      = "gm_pkce_state";
+
+const SYSTEM_PROMPT = "You are Regexly, a regular-expression expert. Given a plain-English description of a pattern, write the regular expression.\n\n- Output THREE sections, separated by blank lines:\n  1. regex: <the expression between backticks>\n  2. example matches: 2-3 short example strings that match, one per line\n  3. explanation: 2-4 bullet lines (plain text, each line starts with \"-\") explaining each major part of the expression\n- Use the requested regex flavor (JavaScript, Python, or PCRE) and note it once.\n- Keep it concise. No preamble, no code fences, no markdown headers.\n- If the description is ambiguous, choose the most reasonable interpretation and mention it in one short line before the sections.";
+
+const EXTRA_FIELDS = [{"id":"flavor","label":"Regex flavor","options":["JavaScript","Python","PCRE"]}];
+
+const USER_PROMPT_BUILDER = function(fields){ return "Pattern description: " + fields.primary + "\n\nFlavor: " + fields.flavor; };
+
+function b64url(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function sha256(str) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return b64url(digest);
+}
+function randomToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return b64url(bytes);
+}
+
+function getKey() { return sessionStorage.getItem(STORAGE_KEY); }
+
+async function connect() {
+  const verifier = randomToken();
+  const state = randomToken();
+  const challenge = await sha256(verifier);
+  sessionStorage.setItem(VERIFIER_KEY, verifier);
+  sessionStorage.setItem(STATE_KEY, state);
+  const params = new URLSearchParams({
+    response_type: "code", client_id: CLIENT_ID, redirect_uri: REDIRECT_URI,
+    scope: "usage", state, code_challenge: challenge, code_challenge_method: "S256"
+  });
+  window.location.href = `${AUTH_URL}?${params.toString()}`;
+}
+
+async function handleCallback() {
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+  if (error) { showError(`Authorization failed: ${error}`); return; }
+  if (!code) return;
+  const verifier = sessionStorage.getItem(VERIFIER_KEY);
+  const savedState = sessionStorage.getItem(STATE_KEY);
+  if (!verifier || state !== savedState) { showError("Invalid OAuth state (possible CSRF). Retry connecting."); return; }
+  try {
+    const res = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code", code, client_id: CLIENT_ID,
+        redirect_uri: REDIRECT_URI, code_verifier: verifier
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error(data.error_description || data.error || "Token exchange failed");
+    sessionStorage.setItem(STORAGE_KEY, data.access_token);
+    sessionStorage.removeItem(VERIFIER_KEY);
+    sessionStorage.removeItem(STATE_KEY);
+    history.replaceState({}, "", REDIRECT_URI);
+  } catch (e) { showError(`Connection failed: ${e.message}`); }
+}
+
+function updateAuthUI() {
+  const key = getKey();
+  const dot = document.getElementById("authDot");
+  const text = document.getElementById("authText");
+  const btn = document.getElementById("connectBtn");
+  if (key) {
+    dot.classList.add("connected");
+    text.innerHTML = "<b>Connected</b> — requests are paid from your own Pollen.<small>Scoped key valid up to 7 days · revoke anytime from your dashboard.</small>";
+    btn.textContent = "Disconnect";
+    btn.classList.add("gold");
+  } else {
+    dot.classList.remove("connected");
+    text.innerHTML = "Not connected — connect your Pollen wallet to generate.<small>Budget default 5 Pollen · you stay in control.</small>";
+    btn.textContent = "Connect Pollen";
+    btn.classList.remove("gold");
+  }
+}
+
+function disconnect() {
+  sessionStorage.removeItem(STORAGE_KEY);
+  updateAuthUI();
+}
+
+function showError(msg) {
+  const box = document.getElementById("err");
+  box.textContent = msg;
+  box.classList.add("show");
+}
+
+// render extra fields
+if (EXTRA_FIELDS.length) {
+  const wrap = document.getElementById("extraFields");
+  EXTRA_FIELDS.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "extra-field";
+    const label = document.createElement("label");
+    label.textContent = f.label;
+    div.appendChild(label);
+    const sel = document.createElement("select");
+    sel.id = f.id;
+    f.options.forEach(o => {
+      const opt = document.createElement("option");
+      opt.value = o;
+      opt.textContent = o;
+      sel.appendChild(opt);
+    });
+    div.appendChild(sel);
+    wrap.appendChild(div);
+  });
+}
+
+function readFields() {
+  const out = {};
+  if (EXTRA_FIELDS.length) EXTRA_FIELDS.forEach(f => { out[f.id] = document.getElementById(f.id).value; });
+  out.primary = document.getElementById("primaryInput").value.trim();
+  return out;
+}
+
+document.getElementById("connectBtn").addEventListener("click", () => {
+  if (getKey()) { disconnect(); } else { connect(); }
+});
+
+document.getElementById("generateBtn").addEventListener("click", generate);
+
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  const text = document.getElementById("outputText").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy to clipboard", 1500);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+});
+
+async function generate() {
+  const premium = document.getElementById("premiumCheck").checked;
+  const fields = readFields();
+  const errBox = document.getElementById("err");
+  const status = document.getElementById("status");
+  const btn = document.getElementById("generateBtn");
+  const output = document.getElementById("output");
+  const copyBtn = document.getElementById("copyBtn");
+
+  errBox.classList.remove("show");
+  status.classList.remove("show");
+  output.classList.remove("show");
+  copyBtn.classList.remove("show");
+
+  if (!getKey()) {
+    showError('Connect your Pollen first — click "Connect Pollen" above and approve the consent screen.');
+    return;
+  }
+  if (!fields.primary) {
+    showError("Please enter some input first.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Thinking...';
+  status.textContent = premium ? "Using premium model (openai/gpt-5.5)..." : "Generating (openai/gpt-5.4-nano)...";
+  status.classList.add("show");
+
+  try {
+    const userContent = USER_PROMPT_BUILDER(fields);
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getKey()}` },
+      body: JSON.stringify({
+        model: premium ? PREMIUM_MODEL : FREE_MODEL,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userContent }
+        ]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        showError("Your scoped key expired or was revoked — connect again.");
+        updateAuthUI();
+      } else {
+        throw new Error(data?.error?.message || (`HTTP ${res.status}`));
+      }
+      return;
+    }
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error(data?.error?.message || "No response from the model");
+    const lastClose = text.lastIndexOf("</details>");
+    const clean = lastClose >= 0 ? text.slice(lastClose + 10) : text;
+    document.getElementById("outputText").textContent = clean.trim();
+    output.classList.add("show");
+    copyBtn.classList.add("show");
+  } catch (e) {
+    showError(`Error: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Generate";
+    status.classList.remove("show");
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generate();
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (window.location.hash?.length > 1) {
+    const frag = new URLSearchParams(window.location.hash.slice(1));
+    const fragKey = frag.get("api_key");
+    if (fragKey) {
+      sessionStorage.setItem(STORAGE_KEY, fragKey);
+      history.replaceState({}, "", REDIRECT_URI);
+    }
+  }
+  handleCallback();
+  updateAuthUI();
+});
+</script>
+</body>
+</html>
